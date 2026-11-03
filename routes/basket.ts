@@ -16,6 +16,11 @@ export function retrieveBasket () {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = req.params.id
+      // Fix IDOR (CWE-639): solo el dueño de la cesta puede consultarla
+      const user = security.authenticatedUsers.from(req)
+      if (!user?.bid || user.bid !== parseInt(id, 10)) {
+        return res.status(403).json({ status: 'error', message: 'Forbidden' })
+      }
       const basket = await BasketModel.findOne({ where: { id }, include: [{ model: ProductModel, paranoid: false, as: 'Products' }] })
       /* jshint eqeqeq:false */
       challengeUtils.solveIf(challenges.basketAccessChallenge, () => {
