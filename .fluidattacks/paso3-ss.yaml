@@ -1,0 +1,13 @@
+# Paso 3 - Secret Scan en modo estricto con exportación a CSV
+# strict: true -> cualquier secreto encontrado rompe el build.
+# Secret Scan toma el formato de la extensión del archivo de salida (.csv).
+strict: true
+ss:
+  include:
+    - .
+  exclude:
+    - node_modules/
+    - test/
+output:
+  file_path: fluidattacks-ss-results.csv
+  format: CSV

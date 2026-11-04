@@ -1,0 +1,15 @@
+# Paso 3 - SAST en modo estricto con exportación a CSV
+# strict: true -> el escáner sale con código 1 si encuentra cualquier vulnerabilidad,
+# y el workflow convierte ese resultado en un job fallido (build roto).
+namespace: entrega4-juice-shop
+language: ES
+strict: true
+output:
+  file_path: fluidattacks-sast-results.csv
+  format: CSV
+sast:
+  include:
+    - .
+  exclude:
+    - node_modules
+    - test

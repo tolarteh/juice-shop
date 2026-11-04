@@ -1,0 +1,117 @@
+# Paso 3: SAST, SCA y Secret Scan de Fluid Attacks en modo estricto.
+# - Cada escáner usa su archivo de configuración en .fluidattacks/paso3-*.yaml (strict: true).
+# - Los resultados se exportan a CSV y se publican como artifact del run.
+# - El build se rompe si el escáner reporta vulnerabilidades.
+#
+# Nota: con strict: true el escáner sale con código 1, pero las actions capturan
+# ese código y solo exponen la salida vulnerabilities_found. Por eso cada job
+# tiene un paso final que falla cuando esa salida es 'true'.
+name: "Paso 3 - Fluid Attacks (estricto + CSV)"
+
+on:
+  push:
+    branches: [paso3-estricto]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sast:
+    name: SAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Escaneo SAST (strict)
+        id: scan
+        uses: fluidattacks/sast-action@1.3.0
+        with:
+          scan_config_path: .fluidattacks/paso3-sast.yaml
+          scanner_mode: full
+
+      - name: Resumen del CSV
+        if: always()
+        run: python3 .fluidattacks/resumen_csv.py SAST fluidattacks-sast-results.csv
+
+      - name: Publicar CSV
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paso3-sast-csv
+          path: fluidattacks-sast-results.csv
+          if-no-files-found: warn
+
+      - name: Romper el build (modo estricto)
+        if: steps.scan.outputs.vulnerabilities_found == 'true'
+        run: |
+          echo "::error::SAST encontró vulnerabilidades y strict: true está activo. Se rompe el build."
+          exit 1
+
+  sca:
+    name: SCA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Escaneo SCA (strict)
+        id: scan
+        uses: fluidattacks/sca-action@1.2.0
+        with:
+          scan_config_path: .fluidattacks/paso3-sca.yaml
+          scanner_mode: full
+
+      - name: Resumen del CSV
+        if: always()
+        run: python3 .fluidattacks/resumen_csv.py SCA fluidattacks-sca-results.csv
+
+      - name: Publicar CSV
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paso3-sca-csv
+          path: fluidattacks-sca-results.csv
+          if-no-files-found: warn
+
+      - name: Romper el build (modo estricto)
+        if: steps.scan.outputs.vulnerabilities_found == 'true'
+        run: |
+          echo "::error::SCA encontró dependencias vulnerables y strict: true está activo. Se rompe el build."
+          exit 1
+
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fijado al commit 42a2429 de main (28-oct-2026): la release 0.3.0 corre el
+      # contenedor sin pararse en el directorio del repositorio; esta versión
+      # instala el binario y escanea desde el workspace.
+      - name: Escaneo de secretos (strict)
+        id: scan
+        uses: fluidattacks/ss-action@42a2429824499567d409f2df58873eef39b87fbc
+        with:
+          scan_config_path: .fluidattacks/paso3-ss.yaml
+          scanner_mode: full
+
+      - name: Resumen del CSV
+        if: always()
+        run: python3 .fluidattacks/resumen_csv.py "Secret Scan" fluidattacks-ss-results.csv
+
+      - name: Publicar CSV
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paso3-secret-scan-csv
+          path: fluidattacks-ss-results.csv
+          if-no-files-found: warn
+
+      - name: Romper el build (modo estricto)
+        if: steps.scan.outputs.vulnerabilities_found == 'true'
+        run: |
+          echo "::error::Secret Scan encontró secretos y strict: true está activo. Se rompe el build."
+          exit 1

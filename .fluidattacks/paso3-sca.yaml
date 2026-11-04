@@ -1,0 +1,14 @@
+# Paso 3 - SCA en modo estricto con exportación a CSV
+# strict: true -> cualquier dependencia vulnerable hace que el escáner salga con código 1
+# y el workflow rompe el build.
+namespace: entrega4-juice-shop
+language: ES
+strict: true
+output:
+  file_path: fluidattacks-sca-results.csv
+  format: CSV
+sca:
+  include:
+    - .
+  exclude:
+    - test
