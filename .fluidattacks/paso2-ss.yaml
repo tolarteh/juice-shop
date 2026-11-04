@@ -1,0 +1,13 @@
+# Paso 2 - Secret Scan en modo informativo
+# strict: false -> se reportan los secretos encontrados sin fallar el pipeline.
+# La salida es SARIF y se queda en el runner: no se exporta CSV ni se sube nada.
+strict: false
+ss:
+  include:
+    - .
+  exclude:
+    - node_modules/
+    - test/
+output:
+  file_path: fluidattacks-ss-results.sarif
+  format: SARIF

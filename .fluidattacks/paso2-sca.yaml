@@ -1,0 +1,14 @@
+# Paso 2 - SCA en modo informativo
+# strict: false -> el escáner reporta las dependencias vulnerables pero no falla el pipeline.
+# La salida es SARIF y se queda en el runner: no se exporta CSV ni se sube nada.
+namespace: entrega4-juice-shop
+language: ES
+strict: false
+output:
+  file_path: fluidattacks-sca-results.sarif
+  format: SARIF
+sca:
+  include:
+    - .
+  exclude:
+    - test

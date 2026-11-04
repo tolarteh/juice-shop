@@ -1,0 +1,58 @@
+# Paso 2: SAST, SCA y Secret Scan de Fluid Attacks en modo informativo.
+# - Cada escáner usa su archivo de configuración en .fluidattacks/paso2-*.yaml (strict: false).
+# - No se exporta CSV, no se suben artifacts y el build no se rompe: solo se escanea.
+name: "Paso 2 - Fluid Attacks (informativo)"
+
+on:
+  push:
+    branches: [paso2-informativo]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sast:
+    name: SAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Escaneo SAST (informativo)
+        id: scan
+        uses: fluidattacks/sast-action@1.3.0
+        with:
+          scan_config_path: .fluidattacks/paso2-sast.yaml
+          scanner_mode: full
+
+  sca:
+    name: SCA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Escaneo SCA (informativo)
+        id: scan
+        uses: fluidattacks/sca-action@1.2.0
+        with:
+          scan_config_path: .fluidattacks/paso2-sca.yaml
+          scanner_mode: full
+
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fijado al commit 42a2429 de main (28-oct-2026): la release 0.3.0 corre el
+      # contenedor sin pararse en el directorio del repositorio; esta versión
+      # instala el binario y escanea desde el workspace.
+      - name: Escaneo de secretos (informativo)
+        id: scan
+        uses: fluidattacks/ss-action@42a2429824499567d409f2df58873eef39b87fbc
+        with:
+          scan_config_path: .fluidattacks/paso2-ss.yaml
+          scanner_mode: full
