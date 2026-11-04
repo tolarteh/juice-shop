@@ -1,0 +1,15 @@
+# Paso 4 - Secret Scan con umbral de severidad y exportación a CSV
+# strictness_threshold: high -> solo los secretos de severidad alta o crítica rompen el build.
+# Nota: la documentación de Fluid Attacks lista strictness_threshold para SAST, SCA y DAST;
+# en Secret Scan se declara igual para mantener una sola política en los tres escáneres.
+# Secret Scan toma el formato de la extensión del archivo de salida (.csv).
+strictness_threshold: high
+ss:
+  include:
+    - .
+  exclude:
+    - node_modules/
+    - test/
+output:
+  file_path: fluidattacks-ss-results.csv
+  format: CSV

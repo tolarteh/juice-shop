@@ -1,0 +1,15 @@
+# Paso 4 - SCA con umbral de severidad y exportación a CSV
+# strictness_threshold: high -> solo las dependencias con CVE de severidad alta o crítica
+# rompen el build. Las de severidad baja y media se reportan en el CSV sin bloquear.
+# Valores posibles: none, low, medium, high, critical.
+namespace: entrega4-juice-shop
+language: ES
+strictness_threshold: high
+output:
+  file_path: fluidattacks-sca-results.csv
+  format: CSV
+sca:
+  include:
+    - .
+  exclude:
+    - test

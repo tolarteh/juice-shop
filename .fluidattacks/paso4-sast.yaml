@@ -1,0 +1,17 @@
+# Paso 4 - SAST con umbral de severidad y exportación a CSV
+# strictness_threshold: high -> solo las vulnerabilidades de severidad alta o crítica
+# hacen que el escáner salga con código 1 y el workflow rompa el build.
+# Las de severidad baja y media se reportan en el CSV sin bloquear.
+# Valores posibles: none, low, medium, high, critical.
+namespace: entrega4-juice-shop
+language: ES
+strictness_threshold: high
+output:
+  file_path: fluidattacks-sast-results.csv
+  format: CSV
+sast:
+  include:
+    - .
+  exclude:
+    - node_modules
+    - test
